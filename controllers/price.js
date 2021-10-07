@@ -1,7 +1,8 @@
 // const moment = require("moment");
 const axios = require("axios");
 const { coingeckoApiEndpoint, appendParams } = require("../utils/axios");
-const { getTokenId, asyncForEach } = require("../utils/token");
+const { getTokenId } = require("../utils/token");
+const { supportedTokens } = require("../config/params");
 const { TokenPrice } = require("../models/TokenPrice");
 
 const getCurrentTokenPriceBySymbol = async (req, res, next) => {
@@ -71,18 +72,41 @@ const getHistoricalTokenPriceBySymbol = async (req, res, next) => {
 };
 
 const getHistoricalTokenPrices = async (req, res, next) => {
-  const tokenPricesRow = await TokenPrice.find({});
+  const { days } = req.query;
 
-  const tokenPrices = tokenPricesRow.map((row) => {
-    return {
-      symbol: row.symbol,
-      price: row.price,
-    };
-  });
+  const tokenHistoricalPrices = await Promise.all(
+    supportedTokens.map(async (token) => {
+      const tokenId = getTokenId(token);
+      const url = appendParams(
+        `${coingeckoApiEndpoint()}/v3/coins/${tokenId}/market_chart`,
+        {
+          ids: tokenId,
+          vs_currency: "usd",
+          days: days || 1,
+        }
+      );
+      let historicalPrices = [];
+
+      try {
+        const cgcRes = await axios.get(url);
+
+        if (cgcRes.status === 200) {
+          historicalPrices = cgcRes.data.prices;
+        }
+      } catch (err) {
+        console.log("historical price fetch error--->", token, err);
+      }
+
+      return {
+        symbol: token,
+        prices: historicalPrices,
+      };
+    })
+  );
 
   res.status(200).json({
     success: true,
-    data: tokenPrices,
+    data: tokenHistoricalPrices,
   });
 };
 

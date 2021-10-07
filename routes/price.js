@@ -30,14 +30,17 @@ router.get("/current/all", getCurrentTokenPrices);
 
 /*
  * @route   GET /api/prices/history
- * @desc    Get Token Prices
+ * @desc    Get Historical Token Price
+ * @params  tokenSymbol: token symbol
+ * @params  days: data up to number of days ago
  * @access  Public
  */
 router.get("/history", getHistoricalTokenPriceBySymbol);
 
 /*
  * @route   GET /api/prices/history/all
- * @desc    Get Token Prices
+ * @desc    Get Historical Token Prices
+ * @params  days: data up to number of days ago
  * @access  Public
  */
 router.get("/history/all", getHistoricalTokenPrices);
