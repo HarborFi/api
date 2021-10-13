@@ -14,7 +14,7 @@ const updateHistoricTokenPrices = async () => {
         {
           ids: tokenId,
           vs_currency: "usd",
-          days: 5,
+          days: 30,
         }
       );
       try {
