@@ -8,16 +8,17 @@ const { TokenPrice } = require("../models/TokenPrice");
 const updateTokenPrices = async () => {
   try {
     asyncForEach(supportedTokens, async (token) => {
-      const tokenPriceRow = await TokenPrice.find({ symbol: token });
+      const tokenPriceRow = await TokenPrice.find({ symbol: token.symbol });
       if (tokenPriceRow.length === 0) {
         const newTokenPrice = new TokenPrice({
-          symbol: token,
+          symbol: token.symbol,
+          address: token.address,
           price: 0,
         });
         await newTokenPrice.save();
       }
 
-      const tokenId = getTokenId(token);
+      const tokenId = getTokenId(token.symbol);
       const url = appendParams(`${coingeckoApiEndpoint()}/v3/simple/price`, {
         ids: tokenId,
         vs_currencies: "usd",
@@ -31,7 +32,7 @@ const updateTokenPrices = async () => {
 
           await TokenPrice.findOneAndUpdate(
             {
-              symbol: token,
+              symbol: token.symbol,
             },
             {
               $set: {

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getCurrentTokenPriceBySymbol,
+  getCurrentSharePrice,
   getCurrentTokenPrices,
   getHistoricalTokenPriceBySymbol,
   getHistoricalTokenPrices,
@@ -20,6 +21,13 @@ router.get("/", (req, res) => {
  * @access  Public
  */
 router.get("/current", getCurrentTokenPriceBySymbol);
+
+/*
+ * @route   GET /api/prices/current/sharePrice
+ * @desc    Get Share Price
+ * @access  Public
+ */
+router.get("/current/sharePrice", getCurrentSharePrice);
 
 /*
  * @route   GET /api/prices/current/all

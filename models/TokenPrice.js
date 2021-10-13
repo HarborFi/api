@@ -3,6 +3,7 @@ const { db } = require("../config/mongo");
 
 const tokenPriceSchema = mongoose.Schema({
   symbol: { type: String, required: true, unique: true },
+  address: { type: String },
   price: { type: Number, default: 0 },
 });
 

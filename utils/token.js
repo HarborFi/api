@@ -1,3 +1,5 @@
+const { supportedTokens } = require("../config/params");
+
 const getTokenId = (symbol) => {
   if (symbol == "JOE") {
     return "joe";
@@ -14,6 +16,10 @@ const getTokenId = (symbol) => {
   }
 };
 
+const getTokenInfo = (symbol) => {
+  return supportedTokens.find((row) => row.symbol === symbol);
+};
+
 const asyncForEach = async (array, callback) => {
   for (let index = 0; index < array.length; index++) {
     await callback(array[index], index, array);
@@ -22,5 +28,6 @@ const asyncForEach = async (array, callback) => {
 
 module.exports = {
   getTokenId,
+  getTokenInfo,
   asyncForEach,
 };
