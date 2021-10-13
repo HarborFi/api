@@ -98,7 +98,7 @@ const getHistoricalTokenPriceBySymbol = async (req, res, next) => {
 };
 
 const getHistoricalSharePrice = async (req, res, next) => {
-  const { days } = req.query;
+  const days = req.query.days || 1;
   const now = Date.now();
 
   const tokenHistoricalPrices = await Promise.all(
