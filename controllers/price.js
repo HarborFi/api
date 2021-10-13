@@ -117,13 +117,14 @@ const getHistoricalSharePrice = async (req, res, next) => {
 
   let sharePrices = {};
 
-  for (let index = 0; index < days + 1; index++) {
+  for (let index = 0; index < Number(days) + 1; index++) {
     const timestamp = (Math.floor(now / 1000 / 86400) - index) * 86400;
     sharePrices[timestamp] = 0;
   }
 
   const pricesWithWeight = tokenHistoricalPrices.map((row) => {
     const _tokenInfo = getTokenInfo(row.symbol);
+
     return row.prices.map((row1) => {
       return {
         timestamp: row1.timestamp,
