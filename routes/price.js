@@ -5,6 +5,7 @@ const {
   getCurrentSharePrice,
   getCurrentTokenPrices,
   getHistoricalTokenPriceBySymbol,
+  getHistoricalSharePrice,
   getHistoricalTokenPrices,
 } = require("../controllers/price");
 
@@ -16,7 +17,7 @@ router.get("/", (req, res) => {
 
 /*
  * @route   GET /api/prices/current
- * @desc    Get Token Price
+ * @desc    Get Current Token Price
  * @params  tokenSymbol: token symbol
  * @access  Public
  */
@@ -24,14 +25,14 @@ router.get("/current", getCurrentTokenPriceBySymbol);
 
 /*
  * @route   GET /api/prices/current/sharePrice
- * @desc    Get Share Price
+ * @desc    Get Current Share Price
  * @access  Public
  */
 router.get("/current/sharePrice", getCurrentSharePrice);
 
 /*
  * @route   GET /api/prices/current/all
- * @desc    Get Token Prices
+ * @desc    Get Current Token Prices
  * @access  Public
  */
 router.get("/current/all", getCurrentTokenPrices);
@@ -44,6 +45,14 @@ router.get("/current/all", getCurrentTokenPrices);
  * @access  Public
  */
 router.get("/history", getHistoricalTokenPriceBySymbol);
+
+/*
+ * @route   GET /api/prices/history/sharePrice
+ * @desc    Get Historical Share Price
+ * @params  days: data up to number of days ago
+ * @access  Public
+ */
+router.get("/history/sharePrice", getHistoricalSharePrice);
 
 /*
  * @route   GET /api/prices/history/all

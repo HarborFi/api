@@ -1,9 +1,28 @@
-// const moment = require("moment");
-const axios = require("axios");
-const { coingeckoApiEndpoint, appendParams } = require("../utils/axios");
 const { getTokenId, getTokenInfo } = require("../utils/token");
 const { supportedTokens } = require("../config/params");
 const { TokenPrice } = require("../models/TokenPrice");
+const { TokenHistoricPrice } = require("../models/TokenHistoricPrice");
+
+const _getHistoricalTokenPriceBySymbol = async ({ tokenSymbol, days }) => {
+  const now = Date.now();
+  const startTimestamp = (Math.floor(now / 1000 / 86400) - days) * 86400;
+
+  const tokenHistoricPriceRow = await TokenHistoricPrice.find({
+    symbol: tokenSymbol,
+  });
+
+  return (
+    tokenHistoricPriceRow &&
+    tokenHistoricPriceRow
+      .filter((row) => row.timestamp >= startTimestamp)
+      .map((row1) => {
+        return {
+          timestamp: row1.timestamp,
+          price: row1.price,
+        };
+      })
+  );
+};
 
 const getCurrentTokenPriceBySymbol = async (req, res, next) => {
   const { tokenSymbol } = req.query;
@@ -26,7 +45,6 @@ const getCurrentSharePrice = async (req, res, next) => {
   const tokenPricesRow = await TokenPrice.find({});
 
   let sharePrice = 0;
-
   tokenPricesRow.map((row) => {
     const _tokenInfo = getTokenInfo(row.symbol);
     if (_tokenInfo && _tokenInfo.shareWeight) {
@@ -68,26 +86,61 @@ const getHistoricalTokenPriceBySymbol = async (req, res, next) => {
     });
   }
 
-  const url = appendParams(
-    `${coingeckoApiEndpoint()}/v3/coins/${tokenId}/market_chart`,
-    {
-      ids: tokenId,
-      vs_currency: "usd",
-      days: days || 1,
-    }
+  const historicalPrices = await _getHistoricalTokenPriceBySymbol({
+    tokenSymbol,
+    days,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: historicalPrices,
+  });
+};
+
+const getHistoricalSharePrice = async (req, res, next) => {
+  const { days } = req.query;
+  const now = Date.now();
+
+  const tokenHistoricalPrices = await Promise.all(
+    supportedTokens.map(async (token) => {
+      const historicalPrices = await _getHistoricalTokenPriceBySymbol({
+        tokenSymbol: token.symbol,
+        days,
+      });
+
+      return {
+        symbol: token.symbol,
+        prices: historicalPrices,
+      };
+    })
   );
 
-  const cgcRes = await axios.get(url);
-  if (cgcRes.status === 200) {
-    const historicalPrices = cgcRes.data.prices;
-    res.status(200).json({
-      success: true,
-      data: historicalPrices,
-    });
+  let sharePrices = {};
+
+  for (let index = 0; index < days + 1; index++) {
+    const timestamp = (Math.floor(now / 1000 / 86400) - index) * 86400;
+    sharePrices[timestamp] = 0;
   }
-  res.status(400).json({
-    success: false,
-    data: [],
+
+  const pricesWithWeight = tokenHistoricalPrices.map((row) => {
+    const _tokenInfo = getTokenInfo(row.symbol);
+    return row.prices.map((row1) => {
+      return {
+        timestamp: row1.timestamp,
+        price: _tokenInfo.shareWeight * row1.price,
+      };
+    });
+  });
+
+  pricesWithWeight.map((row) => {
+    row.map((row1) => {
+      sharePrices[row1.timestamp] += row1.price;
+    });
+  });
+
+  res.status(200).json({
+    success: true,
+    data: sharePrices,
   });
 };
 
@@ -96,29 +149,13 @@ const getHistoricalTokenPrices = async (req, res, next) => {
 
   const tokenHistoricalPrices = await Promise.all(
     supportedTokens.map(async (token) => {
-      const tokenId = getTokenId(token.symbol);
-      const url = appendParams(
-        `${coingeckoApiEndpoint()}/v3/coins/${tokenId}/market_chart`,
-        {
-          ids: tokenId,
-          vs_currency: "usd",
-          days: days || 1,
-        }
-      );
-      let historicalPrices = [];
-
-      try {
-        const cgcRes = await axios.get(url);
-
-        if (cgcRes.status === 200) {
-          historicalPrices = cgcRes.data.prices;
-        }
-      } catch (err) {
-        console.log("historical price fetch error--->", token, err);
-      }
+      const historicalPrices = await _getHistoricalTokenPriceBySymbol({
+        tokenSymbol: token.symbol,
+        days,
+      });
 
       return {
-        symbol: token,
+        symbol: token.symbol,
         prices: historicalPrices,
       };
     })
@@ -135,5 +172,6 @@ module.exports = {
   getCurrentSharePrice,
   getCurrentTokenPrices,
   getHistoricalTokenPriceBySymbol,
+  getHistoricalSharePrice,
   getHistoricalTokenPrices,
 };
