@@ -9,6 +9,8 @@ const getTokenId = (symbol) => {
     return "benqi";
   } else if (symbol == "SNOB") {
     return "snowball";
+  } else if (symbol == "SPELL") {
+    return "spell-token";
   } else if (symbol == "YAK") {
     return "yield-yak";
   } else {

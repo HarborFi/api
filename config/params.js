@@ -17,9 +17,14 @@ const supportedTokens = [
     address: "0x8729438eb15e2c8b576fcc6aecda6a148776c0f5",
     shareWeight: 7.32091219,
   },
+  // {
+  //   symbol: "SNOB",
+  //   address: "0xc38f41a296a4493ff429f1238e030924a1542e50",
+  //   shareWeight: 0.6993007,
+  // },
   {
-    symbol: "SNOB",
-    address: "0xc38f41a296a4493ff429f1238e030924a1542e50",
+    symbol: "SPELL",
+    address: "0x090185f2135308bad17527004364ebcc2d37e5f6",
     shareWeight: 0.6993007,
   },
   {
